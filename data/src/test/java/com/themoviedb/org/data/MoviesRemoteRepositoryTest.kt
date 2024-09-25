@@ -61,7 +61,7 @@ class MoviesRemoteRepositoryTest {
     }
 
     @Test
-    fun testGetNumbersFlow() = runTest {
+    fun testGetMoviesFlow() = runTest {
 
         val mockResponse = MockResponse()
             .setBody(testResponse)  // JSON response from server
