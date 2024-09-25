@@ -18,7 +18,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SearchMoviesFragment : Fragment() {
 
-    lateinit var binding: FragmentSearchMoviesBinding
+    private var binding: FragmentSearchMoviesBinding? = null
     private val viewModel by viewModel<SearchMoviesViewModel>()
     private var adapter: MoviesGridAdapter? = null
 
@@ -31,7 +31,7 @@ class SearchMoviesFragment : Fragment() {
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         binding = FragmentSearchMoviesBinding.inflate(inflater, container, false)
-        return binding.root
+        return binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -41,7 +41,7 @@ class SearchMoviesFragment : Fragment() {
     }
 
     private fun performSearch() {
-        binding.searchInputView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        binding?.searchInputView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 return true
             }
@@ -59,16 +59,16 @@ class SearchMoviesFragment : Fragment() {
             viewModel.moviesList.observe(viewLifecycleOwner) {
                 when (it.status) {
                     DataStatus.Status.LOADING -> {
-                        binding.progressBar.visibility = VISIBLE
+                        binding?.progressBar?.visibility = VISIBLE
                     }
 
                     DataStatus.Status.SUCCESS -> {
-                        binding.progressBar.visibility = GONE
+                        binding?.progressBar?.visibility = GONE
                         it.data?.let { it1 -> showMoviesList(it1) }
                     }
 
                     DataStatus.Status.ERROR -> {
-                        binding.progressBar.visibility = GONE
+                        binding?.progressBar?.visibility = GONE
                         Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
                     }
                 }
@@ -80,8 +80,8 @@ class SearchMoviesFragment : Fragment() {
     private fun showMoviesList(moviesList: List<MovieDomain>) {
         if(adapter == null) {
             adapter = MoviesGridAdapter(context)
-            binding.moviesGridView.adapter = adapter
-            binding.moviesGridView.setOnItemClickListener { parent, view, position, id ->
+            binding?.moviesGridView?.adapter = adapter
+            binding?.moviesGridView?.setOnItemClickListener { parent, view, position, id ->
                openMovieDetailsActivity(moviesList[position].id)
             }
         }
@@ -94,6 +94,11 @@ class SearchMoviesFragment : Fragment() {
         val intent = Intent(requireActivity(), MovieDetailsActivity::class.java)
         intent.putExtra(MOVIE_ID_EXTRA_KEY, movieId)
         startActivity(intent)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 
 }

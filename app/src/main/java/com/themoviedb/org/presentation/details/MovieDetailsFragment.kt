@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.themoviedb.org.R
 import com.themoviedb.org.databinding.FragmentMovieDetailsBinding
 import com.themoviedb.org.domain.models.DataStatus
 import com.themoviedb.org.domain.models.MovieDomain
@@ -17,7 +18,7 @@ import org.koin.core.parameter.parametersOf
 
 class MovieDetailsFragment : Fragment() {
 
-    lateinit var binding: FragmentMovieDetailsBinding
+    private var binding: FragmentMovieDetailsBinding? = null
 
     private val viewModel by viewModel<MovieDetailsViewModel> {
         parametersOf(requireActivity().intent.getIntExtra(MOVIE_ID_EXTRA_KEY, 0))
@@ -30,7 +31,7 @@ class MovieDetailsFragment : Fragment() {
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         binding = FragmentMovieDetailsBinding.inflate(inflater, container, false)
-        return binding.root
+        return binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,16 +55,16 @@ class MovieDetailsFragment : Fragment() {
             viewModel.movieDetails.observe(viewLifecycleOwner) {
                 when (it.status) {
                     DataStatus.Status.LOADING -> {
-                        binding.progressBar.visibility = View.VISIBLE
+                        binding?.progressBar?.visibility = View.VISIBLE
                     }
 
                     DataStatus.Status.SUCCESS -> {
-                        binding.progressBar.visibility = View.GONE
+                        binding?.progressBar?.visibility = View.GONE
                         it.data?.let { it1 -> showMovieDetails(it1) }
                     }
 
                     DataStatus.Status.ERROR -> {
-                        binding.progressBar.visibility = View.GONE
+                        binding?.progressBar?.visibility = View.GONE
                         Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
                     }
                 }
@@ -72,10 +73,10 @@ class MovieDetailsFragment : Fragment() {
     }
 
     private fun showMovieDetails(movieDomain: MovieDomain){
-        context?.let { Glide.with(it).load(movieDomain.poster_path).into(binding.moviePoster) }
-        binding.movieTitle.text = movieDomain.title
-        binding.movieOverview.text = movieDomain.overview
-        binding.movieRating.text = "Rating: ${movieDomain.popularity}"
+        context?.let { binding?.let { it1 -> Glide.with(it).load(movieDomain.poster_path).into(it1.moviePoster) } }
+        binding?.movieTitle?.text = movieDomain.title
+        binding?.movieOverview?.text = movieDomain.overview
+        binding?.movieRating?.text = "${getString(R.string.rating)} ${movieDomain.popularity}"
     }
 
     // get movie id from deeplink
@@ -92,6 +93,11 @@ class MovieDetailsFragment : Fragment() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 
 }
