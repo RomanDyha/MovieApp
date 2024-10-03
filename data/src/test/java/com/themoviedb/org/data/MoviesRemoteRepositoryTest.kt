@@ -81,6 +81,20 @@ class MoviesRemoteRepositoryTest {
 
     }
 
+    @Test
+    fun testGetMoviesError() = runTest {
+        // Simulate server error (code 500)
+        val mockResponse = MockResponse()
+            .setResponseCode(500)
+            .setBody("""{"error": "Server Error"}""")
+
+        mockWebServer.enqueue(mockResponse)
+
+        val moviesRepositoryImpl = MoviesRepositoryImpl(moviesRemoteDataSourceImpl, moviesLocalDataSource)
+        val result = moviesRepositoryImpl.searchMovies("te").toList()
+        assertEquals("Server Error", result.get(1).message)
+    }
+
     val testResponse = "{\n" +
             "    \"page\": 1,\n" +
             "    \"results\": [\n" +
